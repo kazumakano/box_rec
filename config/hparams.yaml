@@ -1,0 +1,12 @@
+batch_size: 1024
+learning_rate: 0.002
+max_epoch: 1000
+num_workers: 4
+shuffle: True
+
+conv_ch_1: 64
+conv_ch_2: 32
+conv_ch_3: 32
+conv_ks_1: 7
+conv_ks_2: 5
+conv_ks_3: 3
