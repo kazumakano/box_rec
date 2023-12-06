@@ -1,2 +1,2 @@
 # Box Rec
-This is box usage state recognizer for trusco recorded videos.
+This is box usage recognizer for trusco recorded videos.

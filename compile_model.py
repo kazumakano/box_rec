@@ -8,7 +8,7 @@ from script.model import CNN3
 def compile_model(result_dir: str, ver: int = 0) -> None:
     CNN3.load_from_checkpoint(
         glob(path.join(result_dir, f"version_{ver}/", "checkpoints/", "epoch=*-step=*.ckpt"))[0],
-        loss_weight=torch.empty(len(data.STATE), dtype=torch.float32)
+        loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32)
     ).to_torchscript(
         file_path=path.join(result_dir, f"version_{ver}/", "model.pt")
     )

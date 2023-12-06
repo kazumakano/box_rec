@@ -12,7 +12,7 @@ from torchvision.transforms import functional as TF
 from tqdm import tqdm
 from . import utility as util
 
-STATE = {
+USAGE = {
     "floor": 0,
     "item": 1,
     "empty_paratte": 2,
@@ -28,7 +28,7 @@ class BoxDataset(data.Dataset):
         self.label = torch.empty(len(files), dtype=torch.int64)
         for i, f in enumerate(tqdm(files, desc="loading box images")):
             self.img[self.aug_num * i:self.aug_num * i + self.aug_num] = util.aug_img(TF.to_tensor(Image.open(f)), self.aug_num)
-            self.label[i] = STATE[path.splitext(path.basename(f))[0].split("_", 3)[3]]
+            self.label[i] = USAGE[path.splitext(path.basename(f))[0].split("_", 3)[3]]
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         return self.img[idx], self.label[idx // self.aug_num]
@@ -38,8 +38,8 @@ class BoxDataset(data.Dataset):
 
     @property
     def breakdown(self) -> np.ndarray:
-        breakdown = np.empty(len(STATE), dtype=np.int32)
-        for i in range(len(STATE)):
+        breakdown = np.empty(len(USAGE), dtype=np.int32)
+        for i in range(len(USAGE)):
             breakdown[i] = len(self.label[self.label == i])
 
         return breakdown
@@ -54,11 +54,11 @@ class DataModule(pl.LightningDataModule):
 
         if box_dir is not None:
             files: dict[str, list[str]] = {}
-            for s in STATE.keys():
+            for s in USAGE.keys():
                 files[s] = []
             if max_num_per_state is not None:
                 cnt = {}
-                for s in STATE.keys():
+                for s in USAGE.keys():
                     cnt[s] = 0
             for d in random.sample(box_dir, len(box_dir)):
                 box_img_files = glob(path.join(d, "*_*_*_*.jpg"))

@@ -29,9 +29,9 @@ def train(box_dir: str, gpu_id: int, param: dict[str, util.Param] | str, ckpt_fi
         datamodule.setup("fit")
         model = CNN3(param, torch.from_numpy(len(datamodule.dataset["train"].label) / datamodule.dataset["train"].breakdown).to(dtype=torch.float32))
         trainer.fit(model, datamodule=datamodule)
-        CNN3.load_from_checkpoint(glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0], loss_weight=torch.empty(len(data.STATE), dtype=torch.float32))
+        CNN3.load_from_checkpoint(glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0], loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32))
     else:
-        model = CNN3.load_from_checkpoint(ckpt_file, param=param, loss_weight=torch.empty(len(data.STATE), dtype=torch.float32))
+        model = CNN3.load_from_checkpoint(ckpt_file, param=param, loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32))
 
     trainer.test(model=model, datamodule=datamodule)
 
