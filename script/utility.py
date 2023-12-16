@@ -1,5 +1,7 @@
 import os.path as path
+import pickle
 from datetime import datetime
+from typing import Any
 import numpy as np
 import pandas as pd
 import torch
@@ -68,6 +70,15 @@ def get_result_dir(dir_name: str | None) -> str:
 def load_param(file: str) -> dict[str, Param | list[Param] | list[str]]:
     with open(file) as f:
         return yaml.safe_load(f)
+
+def load_test_result(result_dir: str, ver: int = 0) -> tuple[tuple[np.ndarray, np.ndarray, np.ndarray], dict[str, Param]]:
+    with open(path.join(result_dir, f"version_{ver}/", "test_outputs.pkl"), mode="rb") as f:
+        return pickle.load(f), load_param(path.join(result_dir, f"version_{ver}/", "hparams.yaml"))
+
+def look_up_key_from_val(src: dict, val: Any) -> Any:
+    for k, v in src.items():
+        if v == val:
+            return k
 
 def random_split(files: list[str], prop: tuple[float, float, float], seed: int = 0) -> tuple[list[str], list[str], list[str]]:
     mixed_idxes = torch.randperm(len(files), generator=torch.Generator().manual_seed(seed), dtype=torch.int32).numpy()
