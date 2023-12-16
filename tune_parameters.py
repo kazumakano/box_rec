@@ -39,7 +39,7 @@ def _try(param: dict[str, util.Param]) -> None:
         enable_model_summary=False
     )
 
-    trainer.fit(CNN3(param, torch.from_numpy(len(datamodule.dataset["train"].label) / datamodule.dataset["train"].breakdown).to(dtype=torch.float32)), datamodule=datamodule)
+    trainer.fit(CNN3(param, datamodule.dataset["train"].calc_loss_weight()), datamodule=datamodule)
 
 def tune_params(param_list_file: str, box_dir: list[str], bot_conf_file: Optional[str] = None, result_dir_name: Optional[str] = None) -> None:
     os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in VISIBLE_GPU])
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--param_list_file", required=True, help="specify parameter list file", metavar="PATH_TO_PARAM_LIST_FILE")
-    parser.add_argument("-d", "--box_dir", nargs="+", help="specify box dataset directory", metavar="PATH_TO_BOX_DIR")
+    parser.add_argument("-d", "--box_dir", nargs="+", help="specify box dataset directories", metavar="PATH_TO_BOX_DIR")
     parser.add_argument("-b", "--bot_conf_file", help="enable slack bot", metavar="PATH_TO_BOT_CONF_FILE")
     parser.add_argument("-r", "--result_dir_name", help="specify result directory name", metavar="RESULT_DIR_NAME")
     args = parser.parse_args()

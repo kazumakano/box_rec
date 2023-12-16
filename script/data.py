@@ -39,13 +39,16 @@ class BoxDataset(data.Dataset):
     @property
     def breakdown(self) -> np.ndarray:
         breakdown = np.empty(len(USAGE), dtype=np.int32)
-        for i in range(len(USAGE)):
-            breakdown[i] = len(self.label[self.label == i])
+        for i, v in enumerate(USAGE.values()):
+            breakdown[i] = len(self.label[self.label == v])
 
         return breakdown
 
+    def calc_loss_weight(self) -> torch.Tensor:
+        return torch.from_numpy(len(self.label) / self.breakdown).to(dtype=torch.float32)
+
 class DataModule(pl.LightningDataModule):
-    def __init__(self, param: dict[str | util.Param], box_dir: Optional[list[str]] = None, max_num_per_state: Optional[int] = None, seed: int = 0) -> None:
+    def __init__(self, param: dict[str | util.Param], box_dir: Optional[list[str]] = None, max_num_per_usage: Optional[int] = None, seed: int = 0) -> None:
         random.seed(a=seed)
         super().__init__()
 
@@ -54,20 +57,20 @@ class DataModule(pl.LightningDataModule):
 
         if box_dir is not None:
             files: dict[str, list[str]] = {}
-            for s in USAGE.keys():
-                files[s] = []
-            if max_num_per_state is not None:
+            for k in USAGE.keys():
+                files[k] = []
+            if max_num_per_usage is not None:
                 cnt = {}
-                for s in USAGE.keys():
-                    cnt[s] = 0
+                for k in USAGE.keys():
+                    cnt[k] = 0
             for d in random.sample(box_dir, len(box_dir)):
                 box_img_files = glob(path.join(d, "*_*_*_*.jpg"))
                 for f in random.sample(box_img_files, len(box_img_files)):
                     label = path.splitext(path.basename(f))[0].split("_", 3)[3]
 
-                    if max_num_per_state is not None:
+                    if max_num_per_usage is not None:
                         cnt[label] += 1
-                        if cnt[label] > max_num_per_state:
+                        if cnt[label] > max_num_per_usage:
                             continue
 
                     files[label].append(f)

@@ -79,7 +79,6 @@ def render() -> None:
                 st.write(f"showing box {st.session_state['box_idx']} on image {st.session_state['img_idx']}")
                 st.image(box_img, width=256, channels="BGR")
 
-                cols = st.columns(len(data.USAGE))
                 for i, c in enumerate(st.columns(len(data.USAGE))):
                     with c:
                         _label_btn(len(box_info), box_img, tuple(data.USAGE.keys())[i], usr_name)
