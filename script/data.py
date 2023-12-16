@@ -45,7 +45,7 @@ class BoxDataset(data.Dataset):
         return breakdown
 
     def calc_loss_weight(self) -> torch.Tensor:
-        return torch.from_numpy(len(self.label) / self.breakdown).to(dtype=torch.float32)
+        return torch.from_numpy(1 / (1 / self.breakdown).sum() / self.breakdown).to(dtype=torch.float32)
 
 class DataModule(pl.LightningDataModule):
     def __init__(self, param: dict[str | util.Param], box_dir: Optional[list[str]] = None, max_num_per_usage: Optional[int] = None, seed: int = 0) -> None:
