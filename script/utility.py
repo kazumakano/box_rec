@@ -41,7 +41,7 @@ def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
     Parameters
     ----------
     box_info : DataFrame
-        Location information of every box.
+        Box location information.
     frm : ndarray[uint8]
         Frame image.
         Shape is (height, width, channel).
@@ -49,7 +49,7 @@ def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
     Returns
     -------
     imgs : ndarray[uint8]
-        Images of every box.
+        Box images.
         Shape is (box_num, height, width, channel).
     """
 
