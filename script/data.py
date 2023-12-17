@@ -3,10 +3,10 @@ import random
 from glob import glob
 from os import mkdir
 from typing import Optional, Self
+import cv2
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from PIL import Image
 from torch.utils import data
 from torchvision.transforms import functional as TF
 from tqdm import tqdm
@@ -27,7 +27,7 @@ class BoxDataset(data.Dataset):
         self.img = torch.empty((self.aug_num * len(files), 3, 64, 64), dtype=torch.float32)
         self.label = torch.empty(len(files), dtype=torch.int64)
         for i, f in enumerate(tqdm(files, desc="loading box images")):
-            self.img[self.aug_num * i:self.aug_num * i + self.aug_num] = util.aug_img(TF.to_tensor(Image.open(f)), self.aug_num)
+            self.img[self.aug_num * i:self.aug_num * i + self.aug_num] = util.aug_img(TF.to_tensor(cv2.imread(f)), self.aug_num)
             self.label[i] = USAGE[path.splitext(path.basename(f))[0].split("_", 3)[3]]
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:

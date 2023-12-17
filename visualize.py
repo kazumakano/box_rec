@@ -27,7 +27,7 @@ def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file
                 break
 
             input = torch.empty((len(box_info), 3, 64, 64), dtype=torch.float32)
-            for i, img in enumerate(util.extract_box(box_info, cv2.cvtColor(frm, cv2.COLOR_BGR2RGB))):
+            for i, img in enumerate(util.extract_box(box_info, frm)):
                 input[i] = TF.to_tensor(img)
 
             for i, pred in enumerate(softmax(model(input.to(device=torch.device("cuda", gpu_id))).cpu().numpy(), axis=1).argmax(axis=1)):

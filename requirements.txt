@@ -1,9 +1,7 @@
-async-timeout
 ipykernel
 matplotlib
 numpy
 opencv-python
-Pillow
 pytorch-lightning
 PyYAML
 ray[air]
