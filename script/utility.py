@@ -9,7 +9,7 @@ import yaml
 from torchvision.transforms import functional as TF
 
 
-Param = bool | float | int
+Param = bool | float | int | None
 
 def aug_img(img: torch.Tensor, aug_num: int) -> torch.Tensor:
     """
