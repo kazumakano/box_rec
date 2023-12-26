@@ -1,7 +1,7 @@
 batch_size: [1024]
+epoch: [1000]
 learning_rate: [0.002]
 max_data_num_per_usage: [null]
-max_epoch: [1000]
 num_workers: [4]
 shuffle: [True]
 
