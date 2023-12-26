@@ -9,9 +9,7 @@ def compile_model(result_dir: str, ver: int = 0) -> None:
     CNN3.load_from_checkpoint(
         glob(path.join(result_dir, f"version_{ver}/", "checkpoints/", "epoch=*-step=*.ckpt"))[0],
         loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32)
-    ).to_torchscript(
-        file_path=path.join(result_dir, f"version_{ver}/", "model.pt")
-    )
+    ).to_torchscript(file_path=path.join(result_dir, f"version_{ver}/", "model.pt"))
 
 if __name__ == "__main__":
     import argparse
