@@ -18,7 +18,8 @@ COLORS = {
 def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file: str) -> None:
     box_info = pd.read_csv(box_info_file)
     cap = cv2.VideoCapture(filename=vid_file)
-    model = jit.load(model_file)
+    device = torch.device("cuda", 0)
+    model = jit.load(model_file, map_location=device)
 
     with torch.no_grad():
         while True:
@@ -30,7 +31,7 @@ def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file
             for i, img in enumerate(util.extract_box(box_info, frm)):
                 input[i] = TF.to_tensor(img)
 
-            for i, pred in enumerate(softmax(model(input.to(device=torch.device("cuda", gpu_id))).cpu().numpy(), axis=1).argmax(axis=1)):
+            for i, pred in enumerate(softmax(model(input.to(device=device)).cpu().numpy(), axis=1).argmax(axis=1)):
                 frm = cv2.rectangle(
                     frm,
                     (box_info.loc[i, "x0"], box_info.loc[i, "y0"]),
