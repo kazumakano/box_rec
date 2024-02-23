@@ -18,7 +18,7 @@ COLORS = {
 def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file: str) -> None:
     box_info = pd.read_csv(box_info_file)
     cap = cv2.VideoCapture(filename=vid_file)
-    device = torch.device("cuda", 0)
+    device = torch.device("cuda", gpu_id)
     model = jit.load(model_file, map_location=device)
 
     with torch.no_grad():
