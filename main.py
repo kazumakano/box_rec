@@ -42,18 +42,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--box_dir", nargs="+", help="specify box dataset directories", metavar="PATH_TO_BOX_DIR")
+    parser.add_argument("-p", "--param_file", required=True, help="specify parameter file", metavar="PATH_TO_PARAM_FILE")
+    parser.add_argument("-c", "--ckpt_file", help="specify checkpoint file", metavar="PATH_TO_CKPT_FILE")
     parser.add_argument("-g", "--gpu_id", default=0, type=int, help="specify GPU device ID", metavar="GPU_ID")
     parser.add_argument("-r", "--result_dir_name", help="specify result directory name", metavar="RESULT_DIR_NAME")
+    args = parser.parse_args()
 
-    if sys.stdin.isatty():
-        parser.add_argument("-p", "--param_file", required=True, help="specify parameter file", metavar="PATH_TO_PARAM_FILE")
-        parser.add_argument("-c", "--ckpt_file", help="specify checkpoint file", metavar="PATH_TO_CKPT_FILE")
-        args = parser.parse_args()
-
-        run(args.box_dir, args.gpu_id, args.param_file, args.ckpt_file, args.result_dir_name)
-
-    else:
-        args = parser.parse_args()
-        lines = sys.stdin.readlines()
-
-        run(args.box_dir, args.gpu_id, json.loads(lines[1]), lines[3].rstrip(), args.result_dir_name)
+    run(args.box_dir, args.gpu_id, args.param_file, args.ckpt_file, args.result_dir_name)
