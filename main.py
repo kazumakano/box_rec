@@ -29,11 +29,9 @@ def run(box_dir: str, gpu_id: int, param: dict[str, util.Param] | str, ckpt_file
         datamodule.setup("fit")
         model = CNN3(param, datamodule.dataset["train"].calc_loss_weight())
         trainer.fit(model, datamodule=datamodule)
-        model = CNN3.load_from_checkpoint(glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0], loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32))
-    else:
-        model = CNN3.load_from_checkpoint(ckpt_file, loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32))
+        ckpt_file = glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0]
 
-    trainer.test(model=model, datamodule=datamodule)
+    trainer.test(model=CNN3.load_from_checkpoint(ckpt_file, loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32)), datamodule=datamodule)
 
 if __name__ == "__main__":
     import argparse
