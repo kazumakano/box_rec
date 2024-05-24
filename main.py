@@ -44,4 +44,4 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--result_dir_name", help="specify result directory name", metavar="RESULT_DIR_NAME")
     args = parser.parse_args()
 
-    run(args.box_dir, args.gpu_id, args.param_file, args.ckpt_file, args.result_dir_name)
+    run(args.box_dirs, args.gpu_id, args.param_file, args.ckpt_file, args.result_dir_name)
