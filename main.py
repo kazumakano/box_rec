@@ -10,13 +10,13 @@ import script.utility as util
 from script.model import CNN3
 
 
-def run(box_dir: str, gpu_id: int, param: dict[str, util.Param] | str, ckpt_file: Optional[str] = None, result_dir_name: Optional[str] = None) -> None:
+def run(box_dirs: list[str], gpu_id: int, param: dict[str, util.Param] | str, ckpt_file: Optional[str] = None, result_dir_name: Optional[str] = None) -> None:
     torch.set_float32_matmul_precision("high")
 
     if isinstance(param, str):
         param = util.load_param(param)
 
-    datamodule = data.DataModule(param, box_dir, param["max_data_num_per_usage"])
+    datamodule = data.DataModule(param, box_dirs, param["max_data_num_per_usage"])
     trainer = pl.Trainer(
         logger=TensorBoardLogger(util.get_result_dir(result_dir_name), name=None, default_hp_metric=False),
         callbacks=ModelCheckpoint(monitor="validation_loss", save_last=True),
@@ -35,11 +35,9 @@ def run(box_dir: str, gpu_id: int, param: dict[str, util.Param] | str, ckpt_file
 
 if __name__ == "__main__":
     import argparse
-    import json
-    import sys
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--box_dir", nargs="+", help="specify box dataset directories", metavar="PATH_TO_BOX_DIR")
+    parser.add_argument("-d", "--box_dirs", nargs="+", required=True, help="specify list of box dataset directories", metavar="PATH_TO_BOX_DIR")
     parser.add_argument("-p", "--param_file", required=True, help="specify parameter file", metavar="PATH_TO_PARAM_FILE")
     parser.add_argument("-c", "--ckpt_file", help="specify checkpoint file", metavar="PATH_TO_CKPT_FILE")
     parser.add_argument("-g", "--gpu_id", default=0, type=int, help="specify GPU device ID", metavar="GPU_ID")

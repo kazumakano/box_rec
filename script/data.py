@@ -48,14 +48,14 @@ class BoxDataset(data.Dataset):
         return torch.from_numpy(1 / (1 / self.breakdown).sum() / self.breakdown).to(dtype=torch.float32)
 
 class DataModule(pl.LightningDataModule):
-    def __init__(self, param: dict[str | util.Param], box_dir: Optional[list[str]] = None, max_num_per_usage: Optional[int] = None, seed: int = 0) -> None:
+    def __init__(self, param: dict[str | util.Param], box_dirs: Optional[list[str]] = None, max_num_per_usage: Optional[int] = None, seed: int = 0) -> None:
         random.seed(a=seed)
         super().__init__()
 
         self.dataset: dict[str, BoxDataset] = {}
         self.save_hyperparameters(param)
 
-        if box_dir is not None:
+        if box_dirs is not None:
             files: dict[str, list[str]] = {}
             for k in USAGE.keys():
                 files[k] = []
@@ -63,7 +63,7 @@ class DataModule(pl.LightningDataModule):
                 cnt = {}
                 for k in USAGE.keys():
                     cnt[k] = 0
-            for d in random.sample(box_dir, len(box_dir)):
+            for d in random.sample(box_dirs, len(box_dirs)):
                 box_img_files = glob(path.join(d, "*_*_*_*.jpg"))
                 for f in random.sample(box_img_files, len(box_img_files)):
                     label = path.splitext(path.basename(f))[0].split("_", 3)[3]
