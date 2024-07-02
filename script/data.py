@@ -1,7 +1,6 @@
 import os.path as path
 import random
 from glob import glob
-from os import mkdir
 from typing import Optional, Self
 import cv2
 import numpy as np
@@ -109,9 +108,6 @@ class DataModule(pl.LightningDataModule):
         return self
 
     def save(self, dir: str) -> None:
-        if not path.exists(dir):
-            mkdir(dir)
-
         torch.save((self.dataset, self.hparams), path.join(dir, "data.pt"))
 
     @staticmethod
