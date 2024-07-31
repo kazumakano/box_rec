@@ -10,7 +10,7 @@ from . import data
 
 
 class _BaseModule(pl.LightningModule):
-    def __init__(self, loss_weight: torch.Tensor | None, param: dict[str, int]) -> None:
+    def __init__(self, loss_weight: torch.Tensor | None, param: dict[str, float | int]) -> None:
         super().__init__()
 
         self.criterion = nn.CrossEntropyLoss(weight=loss_weight)
