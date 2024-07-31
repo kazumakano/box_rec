@@ -50,7 +50,7 @@ class _BaseModule(pl.LightningModule):
             pickle.dump((img, estim, truth), f)
 
 class CNN3(_BaseModule):
-    def __init__(self, param: dict[str, int], loss_weight: Optional[torch.Tensor] = None) -> None:
+    def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
         super().__init__(loss_weight, param)
 
         self.conv_1 = nn.Conv2d(3, param["conv_ch_1"], param["conv_ks_1"])
