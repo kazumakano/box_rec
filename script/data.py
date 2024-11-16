@@ -14,8 +14,8 @@ from . import utility as util
 USAGE = {
     "floor": 0,
     "item": 1,
-    "empty_paratte": 2,
-    "hand_paratte": 3,
+    "empty_pallet": 2,
+    "hand_pallet": 3,
     "other": 4
 }
 
