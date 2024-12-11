@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
-from numpy.lib import npyio
 from torchvision.transforms import functional as TF
 
 
