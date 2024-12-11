@@ -1,5 +1,4 @@
 import os.path as path
-import pickle
 from datetime import datetime
 from typing import Any
 import cv2
@@ -7,6 +6,7 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+from numpy.lib import npyio
 from torchvision.transforms import functional as TF
 
 
@@ -80,8 +80,7 @@ def load_param(file: str) -> dict[str, Param | list[Param] | list[str]]:
         return yaml.safe_load(f)
 
 def load_test_result(result_dir: str, ver: int = 0) -> tuple[tuple[np.ndarray, np.ndarray, np.ndarray], dict[str, Param]]:
-    with open(path.join(result_dir, f"version_{ver}/", "test_outputs.pkl"), mode="rb") as f:
-        return pickle.load(f), load_param(path.join(result_dir, f"version_{ver}/", "hparams.yaml"))
+    return tuple(np.load(path.join(result_dir, f"version_{ver}/", "test_outputs.npz")).values()), load_param(path.join(result_dir, f"version_{ver}/", "hparams.yaml"))
 
 def look_up_key_from_val(src: dict, val: Any) -> Any:
     for k, v in src.items():

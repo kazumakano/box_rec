@@ -1,5 +1,4 @@
 import os.path as path
-import pickle
 from typing import Optional
 import numpy as np
 import pytorch_lightning as pl
@@ -46,8 +45,7 @@ class _BaseModule(pl.LightningModule):
             estim = np.vstack((estim, o[1].cpu().numpy()))
             truth = np.hstack((truth, o[2].squeeze().cpu().numpy()))
 
-        with open(path.join(self.logger.log_dir, "test_outputs.pkl"), mode="wb") as f:
-            pickle.dump((img, estim, truth), f)
+        np.savez_compressed(path.join(self.logger.log_dir, "test_outputs.npz"), img=img, estim=estim, truth=truth)
 
 class CNN3(_BaseModule):
     def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
