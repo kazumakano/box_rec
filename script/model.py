@@ -56,13 +56,10 @@ class CNN3(_BaseModule):
         self.conv_3 = nn.Conv2d(param["conv_ch_2"], param["conv_ch_3"], param["conv_ks_3"])
         self.fc = nn.Linear(((67 - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"])) ** 2 * param["conv_ch_3"], len(data.USAGE))
 
-    def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (1, class)
-        if len(input.shape) == 3:
-            input = input.unsqueeze(0)
-
+    def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (class, )
         hidden = F.dropout(F.relu(self.conv_1(input)), training=self.training)
         hidden = F.dropout(F.relu(self.conv_2(hidden)), training=self.training)
         hidden = F.dropout(F.relu(self.conv_3(hidden)), training=self.training)
-        output = self.fc(hidden.flatten(start_dim=1))
+        output = self.fc(hidden.flatten(start_dim=-3))
 
         return output
