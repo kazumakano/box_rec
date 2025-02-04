@@ -8,6 +8,7 @@ from scipy.special import softmax
 from torch import jit
 from torchvision.transforms import functional as TF
 from tqdm import tqdm
+import script.data as data
 import script.utility as util
 
 GPU_PER_TASK = 0.1
@@ -49,7 +50,7 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
 
                 p: np.ndarray
                 for i, p in enumerate(softmax(output.cpu().numpy(), axis=1)):
-                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, box_info.iloc[i]["no"], p.argmax(), p.max()))
+                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, int(box_info.iloc[i]["no"]), util.look_up_key_from_val(data.USAGE, p.argmax()), p.max()))
 
                 bar.update()
 

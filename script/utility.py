@@ -65,7 +65,7 @@ def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
 def extract_box_v2(box_info: pd.DataFrame, size: int, frm: np.ndarray) -> np.ndarray:
     box_imgs = np.empty((len(box_info), 64, 64, 3), dtype=np.uint8)
     for i, b in box_info.iterrows():
-        box_imgs[i] = cv2.resize(frm[b["y"] - size // 2:b["y"] + size // 2, b["x"] - size // 2:b["x"] + size // 2], (64, 64))
+        box_imgs[i] = cv2.resize(frm[round(b["y"] - size / 2):round(b["y"] + size / 2), round(b["x"] - size / 2):round(b["x"] + size / 2)], (64, 64))
 
     return box_imgs
 

@@ -10,8 +10,8 @@ import script.utility as util
 COLORS = {
     "floor": (255, 255, 255),
     "item": (0, 255, 0),
-    "empty_paratte": (0, 0, 0),
-    "hand_paratte": (0, 0, 255),
+    "empty_pallet": (0, 0, 0),
+    "hand_pallet": (0, 0, 255),
     "other": (255, 0, 0)
 }
 
