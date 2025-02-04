@@ -1,3 +1,4 @@
+import json
 import os.path as path
 from datetime import datetime
 from typing import Any
@@ -74,9 +75,15 @@ def get_result_dir(dir_name: str | None) -> str:
 
     return path.join(path.dirname(__file__), "../result/", dir_name)
 
-def load_param(file: str) -> dict[str, Param | list[Param] | list[str]]:
+def load_param(file: str) -> dict[str, Any] | list[Any]:
     with open(file) as f:
-        return yaml.safe_load(f)
+        match path.splitext(file)[1]:
+            case ".json":
+                return json.load(f)
+            case ".yaml":
+                return yaml.safe_load(f)
+            case _:
+                raise Exception("only json and yaml are supported")
 
 def load_test_result(result_dir: str, ver: int = 0) -> tuple[tuple[np.ndarray, np.ndarray, np.ndarray], dict[str, Param]]:
     return tuple(np.load(path.join(result_dir, f"version_{ver}/", "test_outputs.npz")).values()), load_param(path.join(result_dir, f"version_{ver}/", "hparams.yaml"))
