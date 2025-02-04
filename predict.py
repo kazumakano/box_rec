@@ -7,6 +7,7 @@ import torch
 from scipy.special import softmax
 from torch import jit
 from torchvision.transforms import functional as TF
+from tqdm import tqdm
 import script.utility as util
 
 GPU_PER_TASK = 0.1
@@ -31,9 +32,10 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
 
     with open(path.join(result_dir, "predict_results.csv"), mode="w") as f:
         writer = csv.writer(f)
-        writer.writerow(("frm_idx", "no", "cls"))
+        writer.writerow(("frm_idx", "no", "cls", "conf"))
 
         with torch.no_grad():
+            bar = tqdm(desc="predicting", total=cap.get(cv2.CAP_PROP_FRAME_COUNT))
             while True:
                 ret, frm = cap.read()
                 if not ret:
@@ -45,9 +47,11 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
 
                 output: torch.Tensor = model(input.to(device=device))
 
-                pred = softmax(output.cpu().numpy(), axis=1).argmax(axis=1)
-                for i, p in enumerate(pred):
-                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, box_info.iloc[i]["no"], p))
+                p: np.ndarray
+                for i, p in enumerate(softmax(output.cpu().numpy(), axis=1)):
+                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, box_info.iloc[i]["no"], p.argmax(), p.max()))
+
+                bar.update()
 
 if __name__ == "__main__":
     import argparse
