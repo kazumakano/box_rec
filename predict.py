@@ -36,7 +36,7 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
         writer.writerow(("frm_idx", "no", "cls", "conf"))
 
         with torch.no_grad():
-            bar = tqdm(desc="predicting", total=cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            bar = tqdm(desc="predicting", total=int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
             while True:
                 ret, frm = cap.read()
                 if not ret:
