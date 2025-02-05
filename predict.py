@@ -1,5 +1,4 @@
 import csv
-import os.path as path
 import cv2
 import numpy as np
 import pandas as pd
