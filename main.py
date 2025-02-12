@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
-import script.data as data
+import script.data as D
 import script.utility as util
 from script.model import CNN3
 
@@ -16,7 +16,7 @@ def run(box_dirs: list[str], gpu_id: int, param: dict[str, util.Param] | str, ck
     if isinstance(param, str):
         param = util.load_param(param)
 
-    datamodule = data.DataModule(param, box_dirs, param["max_data_num_per_usage"])
+    datamodule = D.DataModule(param, box_dirs, param["max_data_num_per_usage"])
     trainer = pl.Trainer(
         logger=TensorBoardLogger(util.get_result_dir(result_dir_name), name=None, default_hp_metric=False),
         callbacks=ModelCheckpoint(monitor="validation_loss", save_last=True),
@@ -31,7 +31,7 @@ def run(box_dirs: list[str], gpu_id: int, param: dict[str, util.Param] | str, ck
         trainer.fit(model, datamodule=datamodule)
         ckpt_file = glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0]
 
-    trainer.test(model=CNN3.load_from_checkpoint(ckpt_file, loss_weight=torch.empty(len(data.USAGE), dtype=torch.float32)), datamodule=datamodule)
+    trainer.test(model=CNN3.load_from_checkpoint(ckpt_file, loss_weight=torch.empty(len(D.USAGE), dtype=torch.float32)), datamodule=datamodule)
 
 if __name__ == "__main__":
     import argparse

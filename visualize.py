@@ -4,7 +4,7 @@ import torch
 from scipy.special import softmax
 from torch import jit
 from torchvision.transforms import functional as TF
-import script.data as data
+import script.data as D
 import script.utility as util
 
 COLORS = {
@@ -36,7 +36,7 @@ def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file
                     frm,
                     (box_info.loc[i, "x0"], box_info.loc[i, "y0"]),
                     (box_info.loc[i, "x1"], box_info.loc[i, "y1"]),
-                    COLORS[util.look_up_key_from_val(data.USAGE, pred)],
+                    COLORS[util.look_up_key_from_val(D.USAGE, pred)],
                     thickness=10
                 )
 
