@@ -10,7 +10,6 @@ from tqdm import tqdm
 import script.data as D
 import script.utility as util
 
-GPU_PER_TASK = 0.1
 
 def _compute_offset(pjs: dict[str, np.ndarray]) -> tuple[float, float]:
     offset = [np.inf, np.inf]
