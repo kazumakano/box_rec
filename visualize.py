@@ -31,8 +31,10 @@ def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file
             for i, img in enumerate(util.extract_box(box_info, frm)):
                 input[i] = TF.to_tensor(img)
 
+            output: torch.Tensor = model(input.to(device=device))
+
             p: int
-            for i, p in enumerate(softmax(model(input.to(device=device)).cpu().numpy(), axis=1).argmax(axis=1)):
+            for i, p in enumerate(softmax(output.cpu().numpy(), axis=1).argmax(axis=1)):
                 frm = cv2.rectangle(
                     frm,
                     (box_info.loc[i, "l"], box_info.loc[i, "t"]),
