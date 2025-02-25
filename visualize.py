@@ -34,8 +34,8 @@ def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file
             for i, pred in enumerate(softmax(model(input.to(device=device)).cpu().numpy(), axis=1).argmax(axis=1)):
                 frm = cv2.rectangle(
                     frm,
-                    (box_info.loc[i, "x0"], box_info.loc[i, "y0"]),
-                    (box_info.loc[i, "x1"], box_info.loc[i, "y1"]),
+                    (box_info.loc[i, "l"], box_info.loc[i, "t"]),
+                    (box_info.loc[i, "r"], box_info.loc[i, "b"]),
                     COLORS[util.look_up_key_from_val(D.USAGE, pred)],
                     thickness=10
                 )

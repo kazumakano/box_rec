@@ -75,7 +75,7 @@ def render() -> None:
                 frm = cv2.imread(f)
                 box_img = util.extract_box(box_info, frm)[st.session_state["box_idx"]]
 
-                st.image(cv2.rectangle(frm, (box_info.loc[st.session_state["box_idx"], "x0"], box_info.loc[st.session_state["box_idx"], "y0"]), (box_info.loc[st.session_state["box_idx"], "x1"], box_info.loc[st.session_state["box_idx"], "y1"]), (0, 255, 0), thickness=4), channels="BGR")
+                st.image(cv2.rectangle(frm, (box_info.loc[st.session_state["box_idx"], "l"], box_info.loc[st.session_state["box_idx"], "t"]), (box_info.loc[st.session_state["box_idx"], "r"], box_info.loc[st.session_state["box_idx"], "b"]), (0, 255, 0), thickness=4), channels="BGR")
                 st.write(f"showing box {st.session_state['box_idx']} on image {st.session_state['img_idx']}")
                 st.image(box_img, width=256, channels="BGR")
 

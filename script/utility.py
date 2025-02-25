@@ -58,7 +58,7 @@ def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
 
     box_imgs = np.empty((len(box_info), 64, 64, 3), dtype=np.uint8)
     for i, b in box_info.iterrows():
-        box_imgs[i] = frm[b["y0"]:b["y1"] + 1, b["x0"]:b["x1"] + 1]
+        box_imgs[i] = frm[b["t"]:b["b"] + 1, b["l"]:b["r"] + 1]
 
     return box_imgs
 
