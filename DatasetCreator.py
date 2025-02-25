@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 import pandas as pd
 import streamlit as st
-import script.data as D
 import script.utility as util
+from script.data import Usage
 
 BOX_INFO_FILE = "/mnt/bigdata/00_students/kazuma_nis/box_rec/config/box.csv"
 SRC_DIR = "/mnt/nict-dbp-2/20231123work/scripts/imgs/"
@@ -79,9 +79,9 @@ def render() -> None:
                 st.write(f"showing box {st.session_state['box_idx']} on image {st.session_state['img_idx']}")
                 st.image(box_img, width=256, channels="BGR")
 
-                for i, c in enumerate(st.columns(len(D.USAGE))):
+                for i, c in enumerate(st.columns(len(Usage))):
                     with c:
-                        _label_btn(len(box_info), box_img, tuple(D.USAGE.keys())[i], usr_name)
+                        _label_btn(len(box_info), box_img, tuple(Usage)[i].name.lower(), usr_name)
 
                 cols = st.columns(8)
                 with cols[0]:

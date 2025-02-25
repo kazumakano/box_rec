@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
-from . import data as D
+from .data import Usage
 
 
 class _BaseModule(pl.LightningModule):
@@ -38,7 +38,7 @@ class _BaseModule(pl.LightningModule):
 
     def on_test_end(self) -> None:
         img = np.empty((0, 3, 64, 64), dtype=np.float32)
-        estim = np.empty((0, len(D.USAGE)), dtype=np.float32)
+        estim = np.empty((0, len(Usage)), dtype=np.float32)
         truth = np.empty(0, dtype=np.int32)
         for o in self.test_outputs:
             img = np.vstack((img, o[0].cpu().numpy()))
@@ -54,7 +54,7 @@ class CNN3(_BaseModule):
         self.conv_1 = nn.Conv2d(3, param["conv_ch_1"], param["conv_ks_1"])
         self.conv_2 = nn.Conv2d(param["conv_ch_1"], param["conv_ch_2"], param["conv_ks_2"])
         self.conv_3 = nn.Conv2d(param["conv_ch_2"], param["conv_ch_3"], param["conv_ks_3"])
-        self.fc = nn.Linear(((67 - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"])) ** 2 * param["conv_ch_3"], len(D.USAGE))
+        self.fc = nn.Linear(((67 - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"])) ** 2 * param["conv_ch_3"], len(Usage))
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (class, )
         hidden = F.dropout(F.relu(self.conv_1(input)), training=self.training)

@@ -4,8 +4,8 @@ import torch
 from scipy.special import softmax
 from torch import jit
 from torchvision.transforms import functional as TF
-import script.data as D
 import script.utility as util
+from script.data import Usage
 
 COLORS = {
     "floor": (255, 255, 255),
@@ -31,12 +31,13 @@ def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file
             for i, img in enumerate(util.extract_box(box_info, frm)):
                 input[i] = TF.to_tensor(img)
 
-            for i, pred in enumerate(softmax(model(input.to(device=device)).cpu().numpy(), axis=1).argmax(axis=1)):
+            p: int
+            for i, p in enumerate(softmax(model(input.to(device=device)).cpu().numpy(), axis=1).argmax(axis=1)):
                 frm = cv2.rectangle(
                     frm,
                     (box_info.loc[i, "l"], box_info.loc[i, "t"]),
                     (box_info.loc[i, "r"], box_info.loc[i, "b"]),
-                    COLORS[util.look_up_key_from_val(D.USAGE, pred)],
+                    COLORS[tuple(Usage)[p].name.lower()],
                     thickness=10
                 )
 

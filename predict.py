@@ -7,8 +7,8 @@ from scipy.special import softmax
 from torch import jit
 from torchvision.transforms import functional as TF
 from tqdm import tqdm
-import script.data as D
 import script.utility as util
+from script.data import Usage
 
 
 def _compute_offset(pjs: dict[str, np.ndarray]) -> tuple[float, float]:
@@ -48,7 +48,7 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
 
                 p: np.ndarray
                 for i, p in enumerate(softmax(output.cpu().numpy(), axis=1)):
-                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, int(box_info.iloc[i]["no"]), util.look_up_key_from_val(D.USAGE, p.argmax()), format(p.max(), ".2f")))
+                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, int(box_info.iloc[i]["no"]), tuple(Usage)[p.argmax()].name.lower(), format(p.max(), ".2f")))
 
                 bar.update()
 

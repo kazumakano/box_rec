@@ -31,7 +31,7 @@ def run(box_dirs: list[str], gpu_id: int, param: dict[str, util.Param] | str, ck
         trainer.fit(model, datamodule=datamodule)
         ckpt_file = glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0]
 
-    trainer.test(model=CNN3.load_from_checkpoint(ckpt_file, loss_weight=torch.empty(len(D.USAGE), dtype=torch.float32)), datamodule=datamodule)
+    trainer.test(model=CNN3.load_from_checkpoint(ckpt_file, loss_weight=torch.empty(len(D.Usage), dtype=torch.float32)), datamodule=datamodule)
 
 if __name__ == "__main__":
     import argparse

@@ -1,5 +1,6 @@
 import os.path as path
 import random
+from enum import IntEnum
 from glob import glob
 from typing import Optional, Self
 import cv2
@@ -11,13 +12,13 @@ from torchvision.transforms import functional as TF
 from tqdm import tqdm
 from . import utility as util
 
-USAGE = {
-    "floor": 0,
-    "item": 1,
-    "empty_pallet": 2,
-    "hand_pallet": 3,
-    "other": 4
-}
+
+class Usage(IntEnum):
+    FLOOR        = 0
+    ITEM         = 1
+    EMPTY_PALLET = 2
+    HAND_PALLET  = 3
+    OTHER        = 4
 
 class BoxDataset(data.Dataset):
     def __init__(self, files: list[str], rotate: bool = True) -> None:
@@ -27,7 +28,7 @@ class BoxDataset(data.Dataset):
         self.label = torch.empty(len(files), dtype=torch.int64)
         for i, f in enumerate(tqdm(files, desc="loading box images")):
             self.img[self.aug_num * i:self.aug_num * i + self.aug_num] = util.aug_img(TF.to_tensor(cv2.imread(f)), self.aug_num)
-            self.label[i] = USAGE[path.splitext(path.basename(f))[0].split("_", 3)[3]]
+            self.label[i] = Usage[path.splitext(path.basename(f))[0].split("_", 3)[3].upper()]
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         return self.img[idx], self.label[idx // self.aug_num]
@@ -37,9 +38,9 @@ class BoxDataset(data.Dataset):
 
     @property
     def breakdown(self) -> np.ndarray:
-        breakdown = np.empty(len(USAGE), dtype=np.int32)
-        for i, v in enumerate(USAGE.values()):
-            breakdown[i] = len(self.label[self.label == v])
+        breakdown = np.empty(len(Usage), dtype=np.int32)
+        for i, u in enumerate(Usage):
+            breakdown[i] = torch.count_nonzero(self.label == u)
 
         return breakdown
 
@@ -55,17 +56,17 @@ class DataModule(pl.LightningDataModule):
         self.save_hyperparameters(param)
 
         if box_dirs is not None:
-            files: dict[str, list[str]] = {}
-            for k in USAGE.keys():
-                files[k] = []
+            files: dict[Usage, list[str]] = {}
+            for u in Usage:
+                files[u] = []
             if max_num_per_usage is not None:
                 cnt = {}
-                for k in USAGE.keys():
-                    cnt[k] = 0
+                for u in Usage:
+                    cnt[u] = 0
             for d in random.sample(box_dirs, len(box_dirs)):
                 box_img_files = glob(path.join(d, "*_*_*_*.jpg"))
                 for f in random.sample(box_img_files, len(box_img_files)):
-                    label = path.splitext(path.basename(f))[0].split("_", 3)[3]
+                    label = Usage[path.splitext(path.basename(f))[0].split("_", 3)[3].upper()]
 
                     if max_num_per_usage is not None:
                         cnt[label] += 1
