@@ -41,7 +41,7 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
                     break
 
                 input = torch.empty((len(box_info), 3, 64, 64), dtype=torch.float32)
-                for i, img in enumerate(util.extract_box_v2(box_info, 100, frm)):
+                for i, img in enumerate(util.extract_box_v2(box_info, 110, frm)):
                     input[i] = TF.to_tensor(img)
 
                 output: torch.Tensor = model(input.to(device=device))
