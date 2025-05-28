@@ -1,5 +1,5 @@
 import os.path as path
-from typing import Optional
+from typing import Literal, Optional
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -69,3 +69,10 @@ class CNN3(_BaseModule):
         output = self.fc(hidden.flatten(start_dim=-3))
 
         return output
+
+def get_model_cls(name: Literal["cnn3"]) -> type[CNN3]:
+    match name:
+        case "cnn3":
+            return CNN3
+        case _:
+            raise Exception(f"unknown model {name} was specified")
