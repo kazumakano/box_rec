@@ -42,11 +42,13 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--box_dirs", nargs="+", required=True, help="specify list of box dataset directories", metavar="PATH_TO_BOX_DIR")
-    parser.add_argument("-p", "--param_file", required=True, help="specify parameter file", metavar="PATH_TO_PARAM_FILE")
+    parser.add_argument("-d", "--data_dir", required=True, help="specify dataset directory", metavar="PATH_TO_DATA_DIR")
+    parser.add_argument("-prm", "--param_file", required=True, help="specify parameter file", metavar="PATH_TO_PARAM_FILE")
+    parser.add_argument("-pj", "--pj_file", required=True, help="specify projection matrix file", metavar="PATH_TO_PJ_FILE")
+    parser.add_argument("-bc", "--bb_ckpt_file", help="specify backbone checkpoint file", metavar="PATH_TO_BB_CKPT_FILE")
     parser.add_argument("-c", "--ckpt_file", help="specify checkpoint file", metavar="PATH_TO_CKPT_FILE")
     parser.add_argument("-g", "--gpu_id", default=0, type=int, help="specify GPU device ID", metavar="GPU_ID")
     parser.add_argument("-r", "--result_dir_name", help="specify result directory name", metavar="RESULT_DIR_NAME")
     args = parser.parse_args()
 
-    run(args.box_dirs, args.gpu_id, args.param_file, args.ckpt_file, args.result_dir_name)
+    run(args.data_dir, args.gpu_id, args.param_file, args.pj_file, args.bb_ckpt_file, args.ckpt_file, args.result_dir_name)

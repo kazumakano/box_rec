@@ -66,7 +66,7 @@ class BoxFrmDataset(BoxImgDataset):
 
         self.img = torch.empty((self.aug_num * len(annots["annotations"]), 3, img_size, img_size))
         self.label = torch.empty(len(annots["annotations"]), dtype=torch.int64)
-        for j, a in enumerate(annots["annotations"]):
+        for j, a in enumerate(tqdm(annots["annotations"], desc="loading box images")):
             for i in annots["images"]:
                 if i["id"] == a["image_id"]:
                     pj = pjs[i["file_name"].split("_")[0]]
@@ -100,7 +100,7 @@ class ImgDataModule(pl.LightningDataModule):
             files: dict[Usage, list[str]] = {}
             for u in Usage:
                 files[u] = []
-            if self.hparams["max_num_per_usage"] is not None:
+            if param["max_data_num_per_usage"] is not None:
                 cnt = {}
                 for u in Usage:
                     cnt[u] = 0
@@ -109,9 +109,9 @@ class ImgDataModule(pl.LightningDataModule):
                 for f in random.sample(box_img_files, len(box_img_files)):
                     label = Usage[path.splitext(path.basename(f))[0].split("_", 3)[3].upper()]
 
-                    if self.hparams["max_num_per_usage"] is not None:
+                    if param["max_data_num_per_usage"] is not None:
                         cnt[label] += 1
-                        if cnt[label] > self.hparams["max_num_per_usage"]:
+                        if cnt[label] > param["max_data_num_per_usage"]:
                             continue
 
                     files[label].append(f)
@@ -163,7 +163,7 @@ class ImgDataModule(pl.LightningDataModule):
 class FrmDataModule(ImgDataModule):
     def __init__(self, param: dict[str | util.Param], data_dir: Optional[str] = None, pj_file: Optional[str] = None, prop: tuple[float, float, float] = (0.8, 0.1, 0.1), seed: int = 0) -> None:
         random.seed(a=seed)
-        super().__init__()
+        pl.LightningDataModule.__init__(self)
 
         self.dataset: dict[str, BoxImgDataset] = {}
         self.save_hyperparameters(param)
@@ -177,7 +177,7 @@ class FrmDataModule(ImgDataModule):
             pruned_annots: dict[Usage, list[str]] = {}
             for u in Usage:
                 pruned_annots[u] = []
-            if self.hparams["max_num_per_usage"] is not None:
+            if param["max_data_num_per_usage"] is not None:
                 cnt = {}
                 for u in Usage:
                     cnt[u] = 0
@@ -187,9 +187,9 @@ class FrmDataModule(ImgDataModule):
                         label = UsageV2[c["name"].upper()]
                         break
 
-                if self.hparams["max_num_per_usage"] is not None:
+                if param["max_data_num_per_usage"] is not None:
                     cnt[label] += 1
-                    if cnt[label] > self.hparams["max_num_per_usage"]:
+                    if cnt[label] > param["max_data_num_per_usage"]:
                         continue
 
                 pruned_annots[label].append(a)

@@ -44,7 +44,7 @@ class _BaseModule(pl.LightningModule):
         self.test_outputs.append((batch[0], self(batch[0]), batch[1]))
 
     def on_test_end(self) -> None:
-        img = np.empty((0, 3, 64, 64), dtype=np.float32)
+        img = np.empty((0, 3, self.hparams["img_size"], self.hparams["img_size"]), dtype=np.float32)
         estim = np.empty((0, len(Usage)), dtype=np.float32)
         truth = np.empty(0, dtype=np.int32)
         for o in self.test_outputs:
@@ -75,7 +75,7 @@ class ExpandedCNN(_BaseModule):
     def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
         super().__init__(loss_weight, param)
 
-        bb_ch = (param["img_size"] - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"] + 3) ** 2 * param["conv_ch_3"]
+        bb_ch = ((param["img_size"] - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"] + 3) // param["pool_ks"]) ** 2 * param["conv_ch_3"]
         fc_ch = round(math.sqrt(len(Usage) * bb_ch))
 
         self.bb = CNN3(param, loss_weight)
@@ -97,7 +97,7 @@ class ExpandedCNN(_BaseModule):
 
     def load_bb_from_checkpoint(self, ckpt_file: str) -> None:
         ckpt = torch.load(ckpt_file, map_location=self.device, weights_only=True)
-        self.bb.hparams = ckpt["hyper_parameters"]
+        self.bb.hparams["conv_dp"] = ckpt["hyper_parameters"]["conv_dp"]
         self.bb.load_state_dict(ckpt["state_dict"])
 
 def get_model_cls(name: Literal["cnn3", "expanded_cnn"]) -> type[CNN3 | ExpandedCNN]:
