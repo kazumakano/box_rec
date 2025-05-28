@@ -1,0 +1,16 @@
+batch_size: 1024
+epoch: 100
+learning_rate: 0.00001
+max_data_num_per_usage: null
+num_workers: 4
+optim: adam
+shuffle: True
+
+arch: cnn3
+conv_ch_1: 16
+conv_ch_2: 32
+conv_ch_3: 64
+conv_dp: 0
+conv_ks_1: 3
+conv_ks_2: 5
+conv_ks_3: 7
