@@ -14,7 +14,7 @@ from script.data import Usage
 def _compute_offset(pjs: dict[str, np.ndarray]) -> tuple[float, float]:
     offset = [np.inf, np.inf]
     for p in pjs.values():
-        tf_corners = cv2.perspectiveTransform(np.array(((0, 0), (1920, 0), (0, 1080)), dtype=np.float32)[:, np.newaxis], p).squeeze(axis=1)
+        tf_corners = cv2.perspectiveTransform(np.array(((0, 0), (1920, 0), (0, 1080)), dtype=np.float32)[np.newaxis], p).squeeze(axis=0)
         offset[0] = min(offset[0], tf_corners[0, 0], tf_corners[2, 0])
         offset[1] = min(offset[1], tf_corners[0, 1], tf_corners[1, 1])
 
