@@ -15,7 +15,7 @@ Param = bool | float | int | str | None
 
 def aug_img(img: torch.Tensor, aug_num: int, jitter_color: T.ColorJitter, tf_shape: T.Compose) -> torch.Tensor:
     """
-    Augment image by rotation.
+    Augment image by color jittering and shape transformation.
 
     Parameters
     ----------
@@ -24,6 +24,10 @@ def aug_img(img: torch.Tensor, aug_num: int, jitter_color: T.ColorJitter, tf_sha
         Shape is (channel, height, width).
     aug_num : int
         The number of images to augment.
+    jitter_color : ColorJitter
+        Function to randomly jitter color.
+    tf_shape : Compose
+        Function to randomly transform shape.
 
     Returns
     -------
