@@ -7,12 +7,13 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+from torchvision import transforms as T
 from torchvision.transforms import functional as TF
 
 
-Param = bool | float | int | None
+Param = bool | float | int | str | None
 
-def aug_img(img: torch.Tensor, aug_num: int) -> torch.Tensor:
+def aug_img(img: torch.Tensor, aug_num: int, jitter_color: T.ColorJitter, tf_shape: T.Compose) -> torch.Tensor:
     """
     Augment image by rotation.
 
@@ -32,8 +33,9 @@ def aug_img(img: torch.Tensor, aug_num: int) -> torch.Tensor:
     """
 
     auged_imgs = torch.empty((aug_num, *img.shape), dtype=torch.float32)
-    for i in range(aug_num):
-        auged_imgs[i] = TF.rotate(img, 90 * i)
+    auged_imgs[0] = img
+    for i in range(1, aug_num):
+        auged_imgs[i] = tf_shape(jitter_color(img))
 
     return auged_imgs
 
@@ -111,3 +113,13 @@ def random_split(files: list[str], prop: tuple[float, float, float], seed: int =
         test_files.append(files[i])
 
     return train_files, val_files, test_files
+
+def use_color_jitter(brightness: float, contrast: float, hue: float, saturation: float) -> T.ColorJitter:
+    return T.ColorJitter(brightness=brightness, contrast=contrast, saturation=saturation, hue=hue)
+
+def use_flip_and_rot() -> T.Compose:
+    return T.Compose((
+        T.RandomApply((T.Lambda(lambda img: TF.rotate(img, 90)), )),
+        T.RandomHorizontalFlip(),
+        T.RandomVerticalFlip()
+    ))

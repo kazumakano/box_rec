@@ -21,13 +21,16 @@ class Usage(IntEnum):
     OTHER        = 4
 
 class BoxDataset(data.Dataset):
-    def __init__(self, files: list[str], rotate: bool = True) -> None:
-        self.aug_num = 4 if rotate else 1
+    def __init__(self, files: list[str], aug_num: int = 16, brightness: float = 0.1, contrast: float = 0.1, hue: float = 0.1, saturation: float = 0.1) -> None:
+        self.aug_num = aug_num
+
+        jitter_color = util.use_color_jitter(brightness, contrast, hue, saturation)
+        flip_and_rot = util.use_flip_and_rot()
 
         self.img = torch.empty((self.aug_num * len(files), 3, 64, 64), dtype=torch.float32)
         self.label = torch.empty(len(files), dtype=torch.int64)
         for i, f in enumerate(tqdm(files, desc="loading box images")):
-            self.img[self.aug_num * i:self.aug_num * i + self.aug_num] = util.aug_img(TF.to_tensor(cv2.imread(f)), self.aug_num)
+            self.img[self.aug_num * i:self.aug_num * i + self.aug_num] = util.aug_img(TF.to_tensor(cv2.imread(f)), self.aug_num, jitter_color, flip_and_rot)
             self.label[i] = Usage[path.splitext(path.basename(f))[0].split("_", 3)[3].upper()]
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
@@ -87,9 +90,9 @@ class DataModule(pl.LightningDataModule):
             case "fit":
                 if "train" not in self.dataset.keys():
                     self.dataset["train"] = BoxDataset(self.train_files)
-                    self.dataset["validate"] = BoxDataset(self.val_files, False)
+                    self.dataset["validate"] = BoxDataset(self.val_files, 1)
             case "test":
-                self.dataset["test"] = BoxDataset(self.test_files, False)
+                self.dataset["test"] = BoxDataset(self.test_files, 1)
 
     def train_dataloader(self) -> data.DataLoader:
         return data.DataLoader(self.dataset["train"], batch_size=self.hparams["batch_size"], shuffle=self.hparams["shuffle"], num_workers=self.hparams["num_workers"])
