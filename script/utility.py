@@ -43,6 +43,40 @@ def aug_img(img: torch.Tensor, aug_num: int, jitter_color: T.ColorJitter, tf_sha
 
     return auged_imgs
 
+def crop(pjs: dict[str, np.ndarray]) -> tuple[dict[str, np.ndarray], tuple[int, int]]:
+    """
+    Add margins or remove paddings to fit stitched images.
+
+    Parameters
+    ----------
+    pjs : dict[str, ndarray[float64]]
+        Dictionary of camera names and original projection matrices.
+
+    Returns
+    -------
+    pjs : dict[str, ndarray[float64]]
+        Dictionary of camera names and cropped projection matrices.
+    img_size : tuple[int, int]
+        Stitched image size.
+    """
+
+    stitched_ltrb = [np.inf, np.inf, -np.inf, -np.inf]
+    for p in pjs.values():
+        tf_corners = cv2.perspectiveTransform(np.array(((0, 0), (1920, 0), (0, 1080), (1920, 1080)), dtype=np.float32)[np.newaxis], p).squeeze(axis=0)
+        stitched_ltrb[0] = min(stitched_ltrb[0], tf_corners[0, 0], tf_corners[2, 0])
+        stitched_ltrb[1] = min(stitched_ltrb[1], tf_corners[0, 1], tf_corners[1, 1])
+        stitched_ltrb[2] = max(stitched_ltrb[2], tf_corners[1, 0], tf_corners[3, 0])
+        stitched_ltrb[3] = max(stitched_ltrb[3], tf_corners[2, 1], tf_corners[3, 1])
+    pjs = pjs.copy()
+    for n, p in pjs.items():
+        pjs[n] = np.dot(np.array((
+            (1, 0, -stitched_ltrb[0]),
+            (0, 1, -stitched_ltrb[1]),
+            (0, 0, 1)
+        ), dtype=np.float64), p)
+
+    return pjs, (int(stitched_ltrb[2] - stitched_ltrb[0]), int(stitched_ltrb[3] - stitched_ltrb[1]))
+
 def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
     """
     Extract box images from video frame.

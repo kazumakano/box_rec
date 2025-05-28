@@ -17,7 +17,7 @@ def run(box_dirs: list[str], gpu_id: int, param: dict[str, util.Param] | str, ck
         param = util.load_param(param)
     model_cls = M.get_model_cls(param["arch"])
 
-    datamodule = D.DataModule(param, box_dirs, param["max_data_num_per_usage"])
+    datamodule = D.ImgDataModule(param, box_dirs)
     trainer = pl.Trainer(
         logger=TensorBoardLogger(util.get_result_dir(result_dir_name), name=None, default_hp_metric=False),
         callbacks=ModelCheckpoint(monitor="validation_loss", save_last=True),

@@ -1,3 +1,4 @@
+import math
 import os.path as path
 from typing import Literal, Optional
 import numpy as np
@@ -70,9 +71,40 @@ class CNN3(_BaseModule):
 
         return output
 
-def get_model_cls(name: Literal["cnn3"]) -> type[CNN3]:
+class ExpandedCNN(_BaseModule):
+    def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
+        super().__init__(loss_weight, param)
+
+        bb_ch = (param["img_size"] - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"] + 3) ** 2 * param["conv_ch_3"]
+        fc_ch = round(math.sqrt(len(Usage) * bb_ch))
+
+        self.bb = CNN3(param, loss_weight)
+        self.fc_1 = nn.Linear(bb_ch, fc_ch)
+        self.fc_2 = nn.Linear(fc_ch, len(Usage))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (class, )
+        hidden = F.dropout(F.relu(self.bb.conv_1(input)), p=self.bb.hparams["conv_dp"], training=self.bb.training)
+        hidden = F.dropout(F.relu(self.bb.conv_2(hidden)), p=self.bb.hparams["conv_dp"], training=self.bb.training)
+        hidden = F.dropout(F.relu(self.bb.conv_3(hidden)), p=self.bb.hparams["conv_dp"], training=self.bb.training)
+        hidden = F.max_pool2d(hidden, self.hparams["pool_ks"])
+        hidden = F.dropout(F.relu(self.fc_1(hidden.flatten(start_dim=-3))), p=self.hparams["fc_dp"], training=self.training)
+        output = self.fc_2(hidden)
+
+        return output
+
+    def freeze_bb(self) -> None:
+        self.bb.freeze()    # disable gradient calculation and set to evaluation mode
+
+    def load_bb_from_checkpoint(self, ckpt_file: str) -> None:
+        ckpt = torch.load(ckpt_file, map_location=self.device, weights_only=True)
+        self.bb.hparams = ckpt["hyper_parameters"]
+        self.bb.load_state_dict(ckpt["state_dict"])
+
+def get_model_cls(name: Literal["cnn3", "expanded_cnn"]) -> type[CNN3 | ExpandedCNN]:
     match name:
         case "cnn3":
             return CNN3
+        case "expanded_cnn":
+            return ExpandedCNN
         case _:
             raise Exception(f"unknown model {name} was specified")
