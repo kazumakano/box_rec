@@ -48,7 +48,7 @@ class BoxDataset(data.Dataset):
         return torch.from_numpy(1 / (1 / self.breakdown).sum() / self.breakdown).to(dtype=torch.float32)
 
 class DataModule(pl.LightningDataModule):
-    def __init__(self, param: dict[str | util.Param], box_dirs: Optional[list[str]] = None, max_num_per_usage: Optional[int] = None, seed: int = 0) -> None:
+    def __init__(self, param: dict[str | util.Param], box_dirs: Optional[list[str]] = None, max_num_per_usage: Optional[int] = None, prop: tuple[float, float, float] = (0.8, 0.1, 0.1), seed: int = 0) -> None:
         random.seed(a=seed)
         super().__init__()
 
@@ -77,7 +77,7 @@ class DataModule(pl.LightningDataModule):
 
             self.train_files, self.val_files, self.test_files = [], [], []
             for l in files.values():
-                tmp = util.random_split(l, (0.7, 0.25, 0.05), seed)
+                tmp = util.random_split(l, prop, seed)
                 self.train_files += tmp[0]
                 self.val_files += tmp[1]
                 self.test_files += tmp[2]
