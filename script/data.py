@@ -72,7 +72,7 @@ class BoxFrmDataset(BoxImgDataset):
                     pj = pjs[i["file_name"].split("_")[0]]
                     tf_center = cv2.perspectiveTransform(np.array((a["bbox"][0] + a["bbox"][2] / 2, a["bbox"][1] + a["bbox"][3] / 2), dtype=np.float32)[np.newaxis, np.newaxis], pj).squeeze(axis=(0, 1))
                     warped_frm = cv2.warpPerspective(cv2.imread(path.join(data_dir, "original/", i["file_name"])), pj, stitched_frm_size)
-                    ori_img = TF.resized_crop(TF.to_tensor(warped_frm), round(tf_center[0] - 0.859375 * img_size), round(tf_center[1] - 0.859375 * img_size), round(1.71875 * img_size), round(1.71875 * img_size), (img_size, img_size))    # 110 / 64 = 1.71875
+                    ori_img = TF.resized_crop(TF.to_tensor(warped_frm), round(tf_center[1] - 0.859375 * img_size), round(tf_center[0] - 0.859375 * img_size), round(1.71875 * img_size), round(1.71875 * img_size), (img_size, img_size))    # 110 / 64 = 1.71875
                     self.img[self.aug_num * j:self.aug_num * j + self.aug_num] = util.aug_img(ori_img, self.aug_num, jitter_color, flip_and_rot)
                     break
             for c in annots["categories"]:
