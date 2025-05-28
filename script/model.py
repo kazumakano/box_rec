@@ -15,8 +15,14 @@ class _BaseModule(pl.LightningModule):
         self.criterion = nn.CrossEntropyLoss(weight=loss_weight)
         self.save_hyperparameters(param)
 
-    def configure_optimizers(self) -> optim.SGD:
-        return optim.SGD(self.parameters(), lr=self.hparams["learning_rate"])
+    def configure_optimizers(self) -> optim.Adam | optim.SGD:
+        match self.hparams["optim"]:
+            case "adam":
+                return optim.Adam(self.parameters(), lr=self.hparams["learning_rate"])
+            case "sgd":
+                return optim.SGD(self.parameters(), lr=self.hparams["learning_rate"])
+            case _:
+                raise Exception(f"unknown optimizer {self.hparams['optim']} was specified")
 
     def training_step(self, batch: torch.Tensor) -> torch.Tensor:
         estim = self(batch[0])
@@ -57,9 +63,9 @@ class CNN3(_BaseModule):
         self.fc = nn.Linear(((67 - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"])) ** 2 * param["conv_ch_3"], len(Usage))
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (class, )
-        hidden = F.dropout(F.relu(self.conv_1(input)), training=self.training)
-        hidden = F.dropout(F.relu(self.conv_2(hidden)), training=self.training)
-        hidden = F.dropout(F.relu(self.conv_3(hidden)), training=self.training)
+        hidden = F.dropout(F.relu(self.conv_1(input)), p=self.hparams["conv_dp"], training=self.training)
+        hidden = F.dropout(F.relu(self.conv_2(hidden)), p=self.hparams["conv_dp"], training=self.training)
+        hidden = F.dropout(F.relu(self.conv_3(hidden)), p=self.hparams["conv_dp"], training=self.training)
         output = self.fc(hidden.flatten(start_dim=-3))
 
         return output
