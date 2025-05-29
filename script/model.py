@@ -85,7 +85,9 @@ class DINO(_BaseModule):
         if input.ndim == 3:
             input = input.unsqueeze(0)
         embed = self.bb(input)
-        output = self.fc(embed)
+        output: torch.Tensor = self.fc(embed)
+        if len(output) == 1:
+            output = output.squeeze(dim=0)
 
         return output
 
