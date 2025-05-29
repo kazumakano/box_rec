@@ -71,6 +71,30 @@ class CNN3(_BaseModule):
 
         return output
 
+class DINO(_BaseModule):
+    def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
+        super().__init__(loss_weight, param)
+
+        if param["img_size"] % 14 != 0:
+            raise Exception("image size must be divisible by 14")
+
+        self.bb = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14")
+        self.fc = nn.Linear(384, len(Usage))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (class, )
+        if input.ndim == 3:
+            input = input.unsqueeze(0)
+        embed = self.bb(input)
+        output = self.fc(embed)
+
+        return output
+
+    def freeze_bb(self) -> None:
+        p: nn.Parameter
+        for p in self.bb.parameters():
+            p.requires_grad = False
+        self.bb = self.bb.eval()
+
 class ExpandedCNN(_BaseModule):
     def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
         super().__init__(loss_weight, param)
@@ -100,10 +124,12 @@ class ExpandedCNN(_BaseModule):
         self.bb.hparams["conv_dp"] = ckpt["hyper_parameters"]["conv_dp"]
         self.bb.load_state_dict(ckpt["state_dict"])
 
-def get_model_cls(name: Literal["cnn3", "expanded_cnn"]) -> type[CNN3 | ExpandedCNN]:
+def get_model_cls(name: Literal["cnn3", "dino", "expanded_cnn"]) -> type[CNN3 | DINO | ExpandedCNN]:
     match name:
         case "cnn3":
             return CNN3
+        case "dino":
+            return DINO
         case "expanded_cnn":
             return ExpandedCNN
         case _:

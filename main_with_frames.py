@@ -29,10 +29,10 @@ def run(data_dir: str, gpu_id: int, param: dict[str, util.Param] | str, pj_file:
     if ckpt_file is None:
         datamodule.setup("fit")
         model = model_cls(param, datamodule.dataset["train"].calc_loss_weight())
-        if bb_ckpt_file:
+        if bb_ckpt_file is not None:
             model.load_bb_from_checkpoint(bb_ckpt_file)
-            if param["freeze_bb"]:
-                model.freeze_bb()
+        if "freeze_bb" in param.keys() and param["freeze_bb"]:
+            model.freeze_bb()
         trainer.fit(model, datamodule=datamodule)
         ckpt_file = glob(path.join(trainer.log_dir, "checkpoints/", "epoch=*-step=*.ckpt"))[0]
 
