@@ -126,7 +126,36 @@ class ExpandedCNN(_BaseModule):
         self.bb.hparams["conv_dp"] = ckpt["hyper_parameters"]["conv_dp"]
         self.bb.load_state_dict(ckpt["state_dict"])
 
-def get_model_cls(name: Literal["cnn3", "dino", "expanded_cnn"]) -> type[CNN3 | DINO | ExpandedCNN]:
+class ExpandedCNNV2(ExpandedCNN):
+    def __init__(self, param: dict[str, float | int], loss_weight: Optional[torch.Tensor] = None) -> None:
+        super().__init__(param, loss_weight)
+
+        if param["img_size"] % 2 != 0:
+            raise Exception("image size must be divisible by 2")
+
+        bb_ch = ((param["img_size"] - param["conv_ks_1"] - param["conv_ks_2"] - param["conv_ks_3"] + 3) // param["pool_ks"]) ** 2 * param["conv_ch_3"]
+        fc_ch = round(math.sqrt(len(Usage) * bb_ch))
+
+        self.bb = CNN3(param, loss_weight)
+        self.fc_1 = nn.Linear(bb_ch, fc_ch)
+        self.fc_2 = nn.Linear(fc_ch + len(Usage), len(Usage))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:    # (batch, channel, height, width) -> (batch, class) or (channel, height, width) -> (class, )
+        hidden = F.dropout(F.relu(self.bb.conv_1(input)), p=self.bb.hparams["conv_dp"], training=self.bb.training)
+        hidden = F.dropout(F.relu(self.bb.conv_2(hidden)), p=self.bb.hparams["conv_dp"], training=self.bb.training)
+        hidden = F.dropout(F.relu(self.bb.conv_3(hidden)), p=self.bb.hparams["conv_dp"], training=self.bb.training)
+
+        extent = (self.hparams["img_size"] - 64) // 2
+        hidden_1 = self.bb.fc((hidden[:, :, extent:hidden.shape[2] - extent, extent:hidden.shape[3] - extent] if hidden.ndim == 4 else hidden[:, extent:hidden.shape[1] - extent, extent:hidden.shape[2] - extent]).flatten(start_dim=-3))
+
+        hidden_2 = F.max_pool2d(hidden, self.hparams["pool_ks"])
+        hidden_2 = F.dropout(F.relu(self.fc_1(hidden_2.flatten(start_dim=-3))), p=self.hparams["fc_dp"], training=self.training)
+
+        output = self.fc_2(torch.cat((hidden_1, hidden_2), dim=-1))
+
+        return output
+
+def get_model_cls(name: Literal["cnn3", "dino", "expanded_cnn", "expanded_cnn_v2"]) -> type[CNN3 | DINO | ExpandedCNN | ExpandedCNNV2]:
     match name:
         case "cnn3":
             return CNN3
@@ -134,5 +163,7 @@ def get_model_cls(name: Literal["cnn3", "dino", "expanded_cnn"]) -> type[CNN3 | 
             return DINO
         case "expanded_cnn":
             return ExpandedCNN
+        case "expanded_cnn_v2":
+            return ExpandedCNNV2
         case _:
             raise Exception(f"unknown model {name} was specified")
