@@ -1,5 +1,6 @@
 batch_size: 1024
 epoch: 100
+img_size: 64
 learning_rate: 0.00001
 max_data_num_per_usage: null
 num_workers: 4
