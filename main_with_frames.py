@@ -10,14 +10,14 @@ import script.model as M
 import script.utility as util
 
 
-def run(data_dir: str, gpu_id: int, param: dict[str, util.Param] | str, pj_file: str, bb_ckpt_file: Optional[str] = None, ckpt_file: Optional[str] = None, result_dir_name: Optional[str] = None) -> None:
+def run(data_dirs: list[str], gpu_id: int, param: dict[str, util.Param] | str, pj_file: str, bb_ckpt_file: Optional[str] = None, ckpt_file: Optional[str] = None, result_dir_name: Optional[str] = None) -> None:
     torch.set_float32_matmul_precision("high")
 
     if isinstance(param, str):
         param = util.load_param(param)
     model_cls = M.get_model_cls(param["arch"])
 
-    datamodule = D.FrmDataModule(param, data_dir, pj_file)
+    datamodule = D.FrmDataModule(param, data_dirs, pj_file)
     trainer = pl.Trainer(
         logger=TensorBoardLogger(util.get_result_dir(result_dir_name), name=None, default_hp_metric=False),
         callbacks=ModelCheckpoint(monitor="validation_loss", save_last=True),
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_dir", required=True, help="specify dataset directory", metavar="PATH_TO_DATA_DIR")
+    parser.add_argument("-d", "--data_dirs", nargs="+", required=True, help="specify dataset directory", metavar="PATH_TO_DATA_DIR")
     parser.add_argument("-prm", "--param_file", required=True, help="specify parameter file", metavar="PATH_TO_PARAM_FILE")
     parser.add_argument("-pj", "--pj_file", required=True, help="specify projection matrix file", metavar="PATH_TO_PJ_FILE")
     parser.add_argument("-bc", "--bb_ckpt_file", help="specify backbone checkpoint file", metavar="PATH_TO_BB_CKPT_FILE")
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--result_dir_name", help="specify result directory name", metavar="RESULT_DIR_NAME")
     args = parser.parse_args()
 
-    run(args.data_dir, args.gpu_id, args.param_file, args.pj_file, args.bb_ckpt_file, args.ckpt_file, args.result_dir_name)
+    run(args.data_dirs, args.gpu_id, args.param_file, args.pj_file, args.bb_ckpt_file, args.ckpt_file, args.result_dir_name)
