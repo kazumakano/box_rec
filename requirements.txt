@@ -2,6 +2,7 @@ ipykernel
 matplotlib
 numpy
 opencv-python
+pandas
 pytorch-lightning
 PyYAML
 scipy
