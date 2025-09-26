@@ -8,6 +8,7 @@ PyYAML
 scipy
 streamlit
 tensorboard
+transitions
 torch
 torch-tb-profiler
 torchvision

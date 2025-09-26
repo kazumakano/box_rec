@@ -1,0 +1,3 @@
+[submodule "denoise"]
+	path = denoise
+	url = https://github.com/aoi-33/stateful-noise-filter.git
