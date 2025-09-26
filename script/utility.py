@@ -43,7 +43,7 @@ def aug_img(img: torch.Tensor, aug_num: int, jitter_color: T.ColorJitter, tf_sha
 
     return auged_imgs
 
-def crop(pjs: dict[str, np.ndarray]) -> tuple[dict[str, np.ndarray], tuple[int, int]]:
+def crop(pjs: dict[str, np.ndarray]) -> tuple[dict[str, np.ndarray], tuple[int, int], tuple[float, float]]:
     """
     Add margins or remove paddings to fit stitched images.
 
@@ -58,6 +58,8 @@ def crop(pjs: dict[str, np.ndarray]) -> tuple[dict[str, np.ndarray], tuple[int, 
         Dictionary of camera names and cropped projection matrices.
     img_size : tuple[int, int]
         Stitched image size.
+    offset : tuple[float, float]
+        Coordinate offset.
     """
 
     stitched_ltrb = [np.inf, np.inf, -np.inf, -np.inf]
@@ -75,7 +77,7 @@ def crop(pjs: dict[str, np.ndarray]) -> tuple[dict[str, np.ndarray], tuple[int, 
             (0, 0, 1)
         ), dtype=np.float64), p)
 
-    return pjs, (int(stitched_ltrb[2] - stitched_ltrb[0]), int(stitched_ltrb[3] - stitched_ltrb[1]))
+    return pjs, (int(stitched_ltrb[2] - stitched_ltrb[0]), int(stitched_ltrb[3] - stitched_ltrb[1])), (stitched_ltrb[0], stitched_ltrb[1])
 
 def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
     """
@@ -151,6 +153,9 @@ def random_split(files: list[str], prop: tuple[float, float, float], seed: int =
         test_files.append(files[i])
 
     return train_files, val_files, test_files
+
+def sec2str(ts: float) -> str:
+    return f"{int(ts // 3600):02d}:{int(ts % 3600 // 60):02d}:{ts % 60:05.2f}"
 
 def use_color_jitter(brightness: float, contrast: float, hue: float, saturation: float) -> T.ColorJitter:
     return T.ColorJitter(brightness=brightness, contrast=contrast, saturation=saturation, hue=hue)

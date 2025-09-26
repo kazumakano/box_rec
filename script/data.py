@@ -176,7 +176,7 @@ class FrmDataModule(ImgDataModule):
         self.dataset: dict[str, BoxImgDataset] = {}
         self.save_hyperparameters(param)
         if pj_file is not None:
-            self.pjs, self.stitched_frm_size = util.crop({n: np.array(p["projective_matrix"], dtype=np.float64) for n, p in util.load_param(pj_file).items()})
+            self.pjs, self.stitched_frm_size = util.crop({n: np.array(p["projective_matrix"], dtype=np.float64) for n, p in util.load_param(pj_file).items()})[:2]
 
         annots: list[tuple[int, dict[str, float | int | list[float]]]] = []
         cats: list[list[dict[str, int | str]]] = []
