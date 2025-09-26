@@ -15,37 +15,37 @@ COLORS = {
     "other": (255, 0, 0)
 }
 
+@torch.no_grad
 def vis(box_info_file: str, gpu_id: int, model_file: str, scale: float, vid_file: str) -> None:
     box_info = pd.read_csv(box_info_file)
     cap = cv2.VideoCapture(filename=vid_file)
     device = torch.device("cuda", gpu_id)
     model = jit.load(model_file, map_location=device)
 
-    with torch.no_grad():
-        while True:
-            ret, frm = cap.read()
-            if not ret:
-                break
+    while True:
+        ret, frm = cap.read()
+        if not ret:
+            break
 
-            input = torch.empty((len(box_info), 3, 64, 64), dtype=torch.float32)
-            for i, img in enumerate(util.extract_box(box_info, frm)):
-                input[i] = TF.to_tensor(img)
+        input = torch.empty((len(box_info), 3, 64, 64), dtype=torch.float32)
+        for i, img in enumerate(util.extract_box(box_info, frm)):
+            input[i] = TF.to_tensor(img)
 
-            output: torch.Tensor = model(input.to(device=device))
+        output: torch.Tensor = model(input.to(device=device))
 
-            p: int
-            for i, p in enumerate(softmax(output.cpu().numpy(), axis=1).argmax(axis=1)):
-                frm = cv2.rectangle(
-                    frm,
-                    (box_info.loc[i, "l"], box_info.loc[i, "t"]),
-                    (box_info.loc[i, "r"], box_info.loc[i, "b"]),
-                    COLORS[tuple(Usage)[p].name.lower()],
-                    thickness=10
-                )
+        p: int
+        for i, p in enumerate(softmax(output.cpu().numpy(), axis=1).argmax(axis=1)):
+            frm = cv2.rectangle(
+                frm,
+                (box_info.loc[i, "l"], box_info.loc[i, "t"]),
+                (box_info.loc[i, "r"], box_info.loc[i, "b"]),
+                COLORS[tuple(Usage)[p].name.lower()],
+                thickness=10
+            )
 
-            cv2.imshow("prediction", cv2.resize(frm, None, fx=scale, fy=scale))
-            if cv2.waitKey(delay=1) != -1:
-                break
+        cv2.imshow("prediction", cv2.resize(frm, None, fx=scale, fy=scale))
+        if cv2.waitKey(delay=1) != -1:
+            break
 
     cap.release()
     cv2.destroyAllWindows()

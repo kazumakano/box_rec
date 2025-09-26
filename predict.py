@@ -20,6 +20,7 @@ def _compute_offset(pjs: dict[str, np.ndarray]) -> tuple[float, float]:
 
     return tuple(offset)
 
+@torch.no_grad
 def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, result_file: str, vid_file: str) -> None:
     offset = _compute_offset({cn: np.array(p["projective_matrix"], dtype=np.float32) for cn, p in util.load_param(pj_file).items()})
     box_info = pd.read_csv(box_info_file, usecols=("no", "x", "y"))
@@ -33,24 +34,23 @@ def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, resu
         writer = csv.writer(f)
         writer.writerow(("frm_idx", "no", "cls", "conf"))
 
-        with torch.no_grad():
-            bar = tqdm(desc="predicting", total=int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
-            while True:
-                ret, frm = cap.read()
-                if not ret:
-                    break
+        bar = tqdm(desc="predicting", total=int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+        while True:
+            ret, frm = cap.read()
+            if not ret:
+                break
 
-                input = torch.empty((len(box_info), 3, 64, 64), dtype=torch.float32)
-                for i, img in enumerate(util.extract_box_v2(box_info, 110, frm)):
-                    input[i] = TF.to_tensor(img)
+            input = torch.empty((len(box_info), 3, 64, 64), dtype=torch.float32)
+            for i, img in enumerate(util.extract_box_v2(box_info, 110, frm)):
+                input[i] = TF.to_tensor(img)
 
-                output: torch.Tensor = model(input.to(device=device))
+            output: torch.Tensor = model(input.to(device=device))
 
-                p: np.ndarray
-                for i, p in enumerate(softmax(output.cpu().numpy(), axis=1)):
-                    writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, int(box_info.iloc[i]["no"]), tuple(Usage)[p.argmax()].name.lower(), format(p.max(), ".2f")))
+            p: np.ndarray
+            for i, p in enumerate(softmax(output.cpu().numpy(), axis=1)):
+                writer.writerow((int(cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1, int(box_info.iloc[i]["no"]), tuple(Usage)[p.argmax()].name.lower(), format(p.max(), ".2f")))
 
-                bar.update()
+            bar.update()
 
 if __name__ == "__main__":
     import argparse
