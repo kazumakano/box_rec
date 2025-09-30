@@ -105,6 +105,26 @@ def extract_box(box_info: pd.DataFrame, frm: np.ndarray) -> np.ndarray:
     return box_imgs
 
 def extract_box_v2(box_info: pd.DataFrame, size: int, frm: np.ndarray) -> np.ndarray:
+    """
+    Extract box images from video frame and resize them to 64 x 64 [px].
+
+    Parameters
+    ----------
+    box_info : DataFrame
+        Box location information.
+    size : int
+        Box size [px] on frame image.
+    frm : ndarray[uint8]
+        Frame image.
+        Shape is (height, width, channel).
+
+    Returns
+    -------
+    imgs : ndarray[uint8]
+        Box images.
+        Shape is (box_num, height, width, channel).
+    """
+
     box_imgs = np.empty((len(box_info), 64, 64, 3), dtype=np.uint8)
     for i, b in box_info.iterrows():
         box_imgs[i] = cv2.resize(frm[round(b["y"] - size / 2):round(b["y"] + size / 2), round(b["x"] - size / 2):round(b["x"] + size / 2)], (64, 64))
