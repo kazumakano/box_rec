@@ -11,18 +11,9 @@ import script.utility as util
 from script.data import Usage
 
 
-def _compute_offset(pjs: dict[str, np.ndarray]) -> tuple[float, float]:
-    offset = [np.inf, np.inf]
-    for p in pjs.values():
-        tf_corners = cv2.perspectiveTransform(np.array(((0, 0), (1920, 0), (0, 1080)), dtype=np.float32)[np.newaxis], p).squeeze(axis=0)
-        offset[0] = min(offset[0], tf_corners[0, 0], tf_corners[2, 0])
-        offset[1] = min(offset[1], tf_corners[0, 1], tf_corners[1, 1])
-
-    return tuple(offset)
-
 @torch.no_grad
 def predict(box_info_file: str, gpu_id: int, model_file: str, pj_file: str, result_file: str, vid_file: str) -> None:
-    offset = _compute_offset({cn: np.array(p["projective_matrix"], dtype=np.float32) for cn, p in util.load_param(pj_file).items()})
+    offset = util.crop({cn: np.array(p["projective_matrix"], dtype=np.float32) for cn, p in util.load_param(pj_file).items()})[2]
     box_info = pd.read_csv(box_info_file, usecols=("no", "x", "y"))
     box_info.loc[:, "x"] -= offset[0]
     box_info.loc[:, "y"] -= offset[1]
